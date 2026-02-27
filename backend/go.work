@@ -1,0 +1,18 @@
+go 1.26
+
+use (
+	./pkg/config
+	./pkg/riot
+	./pkg/database
+	./pkg/middleware
+	./pkg/models
+	./pkg/nats
+	./pkg/response
+	./services/riot-gateway
+	./services/champion-svc
+	./services/player-svc
+	./services/analytics-svc
+	./services/leaderboard-svc
+	./services/content-svc
+	./services/data-worker
+)

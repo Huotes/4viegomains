@@ -1,0 +1,96 @@
+4ViegoMains Backend - Files Created
+====================================
+
+WORKSPACE & BUILD
+-----------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/go.work
+
+CONFIGURATION PACKAGE
+---------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/config/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/config/config.go
+
+RIOT API PACKAGE
+----------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/client.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/ratelimiter.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/ddragon.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/types.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/riot/endpoints.go
+
+DATABASE PACKAGE
+----------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/database/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/database/postgres.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/database/redis.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/database/clickhouse.go
+
+MIDDLEWARE PACKAGE
+------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/middleware/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/middleware/logging.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/middleware/cors.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/middleware/recovery.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/middleware/ratelimit.go
+
+MODELS PACKAGE
+--------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/models/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/models/champion.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/models/player.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/models/analytics.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/models/leaderboard.go
+
+NATS PACKAGE
+------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/nats/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/nats/client.go
+
+RESPONSE PACKAGE
+----------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/response/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/pkg/response/response.go
+
+RIOT GATEWAY SERVICE (Port 8081)
+---------------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/riot-gateway/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/riot-gateway/cmd/main.go
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/riot-gateway/Dockerfile
+
+CHAMPION SERVICE (Port 8082)
+-----------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/champion-svc/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/champion-svc/cmd/main.go
+
+PLAYER SERVICE (Port 8083)
+---------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/player-svc/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/player-svc/cmd/main.go
+
+ANALYTICS SERVICE (Port 8084)
+------------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/analytics-svc/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/analytics-svc/cmd/main.go
+
+LEADERBOARD SERVICE (Port 8085)
+--------------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/leaderboard-svc/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/leaderboard-svc/cmd/main.go
+
+CONTENT SERVICE (Port 8086)
+----------------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/content-svc/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/content-svc/cmd/main.go
+
+DATA WORKER SERVICE
+--------------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/data-worker/go.mod
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/services/data-worker/cmd/main.go
+
+DOCUMENTATION
+--------------
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/PROJECT_STRUCTURE.md
+/sessions/tender-trusting-heisenberg/mnt/4viegomains/backend/FILES_CREATED.txt
+
+TOTAL FILES: 43

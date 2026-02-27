@@ -1,0 +1,351 @@
+version: "3.9"
+
+services:
+  # Reverse Proxy
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: viego-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./public:/var/www/public:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - riot-gateway
+      - champion-svc
+      - player-svc
+      - analytics-svc
+      - leaderboard-svc
+      - content-svc
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: viego-frontend
+    environment:
+      - REACT_APP_API_URL=${API_URL:-http://localhost:8000}
+      - NODE_ENV=${NODE_ENV:-production}
+    depends_on:
+      - riot-gateway
+    networks:
+      - viego-net
+    restart: unless-stopped
+
+  # Backend Services
+  riot-gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.riot-gateway
+    container_name: viego-riot-gateway
+    environment:
+      - PORT=8001
+      - RIOT_API_KEY=${RIOT_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  champion-svc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.champion-svc
+    container_name: viego-champion-svc
+    environment:
+      - PORT=8002
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - REDIS_URL=redis://redis:6379/1
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - postgres
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  player-svc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.player-svc
+    container_name: viego-player-svc
+    environment:
+      - PORT=8003
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - REDIS_URL=redis://redis:6379/2
+      - NATS_URL=nats://nats:4222
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - postgres
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  analytics-svc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.analytics-svc
+    container_name: viego-analytics-svc
+    environment:
+      - PORT=8004
+      - CLICKHOUSE_URL=${CLICKHOUSE_URL:-http://clickhouse:8123}
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - REDIS_URL=redis://redis:6379/3
+      - NATS_URL=nats://nats:4222
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - clickhouse
+      - postgres
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  leaderboard-svc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.leaderboard-svc
+    container_name: viego-leaderboard-svc
+    environment:
+      - PORT=8005
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - REDIS_URL=redis://redis:6379/4
+      - NATS_URL=nats://nats:4222
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - postgres
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  content-svc:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.content-svc
+    container_name: viego-content-svc
+    environment:
+      - PORT=8006
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - REDIS_URL=redis://redis:6379/5
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  data-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.data-worker
+    container_name: viego-data-worker
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL:-postgres://viego:viego_pass@postgres:5432/viego_db}
+      - CLICKHOUSE_URL=${CLICKHOUSE_URL:-http://clickhouse:8123}
+      - REDIS_URL=redis://redis:6379/6
+      - NATS_URL=nats://nats:4222
+      - RIOT_API_KEY=${RIOT_API_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      - postgres
+      - clickhouse
+      - redis
+      - nats
+    networks:
+      - viego-net
+    restart: unless-stopped
+
+  # Databases
+  postgres:
+    image: postgres:16-alpine
+    container_name: viego-postgres
+    environment:
+      - POSTGRES_USER=viego
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-viego_pass}
+      - POSTGRES_DB=viego_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U viego -d viego_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine
+    container_name: viego-clickhouse
+    environment:
+      - CLICKHOUSE_DB=viego
+      - CLICKHOUSE_USER=viego
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-clickhouse_pass}
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./backend/migrations/clickhouse:/docker-entrypoint-initdb.d
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cache & Message Queue
+  redis:
+    image: redis:7-alpine
+    container_name: viego-redis
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: viego-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats_data:/data
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8222/varz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: viego-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: viego-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - viego-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  viego-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+  redis_data:
+  nats_data:
+  prometheus_data:
+  grafana_data:
