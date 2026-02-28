@@ -323,3 +323,9 @@ func extractMethodName(path string) string {
 	}
 	return "unknown"
 }
+
+// GetLatestDDragonVersion fetches the latest Data Dragon version
+func (c *Client) GetLatestDDragonVersion(ctx context.Context) (string, error) {
+	ddClient := NewDataDragonClient()
+	return ddClient.GetLatestVersion(ctx)
+}
