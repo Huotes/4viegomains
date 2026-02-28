@@ -3,7 +3,10 @@ module github.com/4viegomains/backend/services/champion-svc
 go 1.26
 
 require (
-	github.com/4viegomains/backend v0.0.0
+	github.com/4viegomains/backend/pkg/config v0.0.0
+	github.com/4viegomains/backend/pkg/database v0.0.0
+	github.com/4viegomains/backend/pkg/middleware v0.0.0
+	github.com/4viegomains/backend/pkg/nats v0.0.0
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/nats-io/nats.go v1.31.0
@@ -12,6 +15,8 @@ require (
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -37,4 +42,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/4viegomains/backend => ../../
+replace (
+	github.com/4viegomains/backend/pkg/config => ../../pkg/config
+	github.com/4viegomains/backend/pkg/database => ../../pkg/database
+	github.com/4viegomains/backend/pkg/middleware => ../../pkg/middleware
+	github.com/4viegomains/backend/pkg/nats => ../../pkg/nats
+)

@@ -1,180 +1,61 @@
-.PHONY: help dev build up down logs migrate seed test lint clean stop restart ps health
+# 4ViegoMains — Makefile
 
-# Default target
-help:
-	@echo "4ViegoMains - Makefile Commands"
-	@echo "================================"
-	@echo "dev           - Start development environment with docker-compose"
-	@echo "build         - Build all Docker images"
-	@echo "up            - Start all services (production)"
-	@echo "down          - Stop all services"
-	@echo "stop          - Stop services without removing volumes"
-	@echo "restart       - Restart all services"
-	@echo "ps            - List running containers"
-	@echo "logs          - View logs from all services"
-	@echo "logs-SERVICE  - View logs from specific service (e.g., logs-frontend)"
-	@echo "health        - Check health status of all services"
-	@echo "migrate       - Run database migrations"
-	@echo "seed          - Seed database with initial data"
-	@echo "test          - Run all tests"
-	@echo "lint          - Run linters on backend and frontend"
-	@echo "clean         - Remove all containers, volumes, and images"
+.PHONY: help dev infra infra-down frontend backend-gateway setup logs clean status db-shell redis-shell
+
+help: ## Mostra comandos disponíveis
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+infra: ## Sobe infraestrutura (Postgres, Redis, ClickHouse, NATS)
+	docker compose -f docker-compose.dev.yml up -d
 	@echo ""
-	@echo "Development Commands:"
-	@echo "  make dev              - Start dev environment"
-	@echo "  make logs-frontend    - View frontend logs"
-	@echo "  make logs-champion    - View champion service logs"
+	@echo "Infraestrutura rodando:"
+	@echo "  PostgreSQL:   localhost:5432"
+	@echo "  Redis:        localhost:6379"
+	@echo "  ClickHouse:   localhost:8123"
+	@echo "  NATS:         localhost:4222"
+	@echo "  NATS Monitor: localhost:8222"
+
+infra-down: ## Para infraestrutura
+	docker compose -f docker-compose.dev.yml down
+
+frontend: ## Roda frontend Next.js (hot reload)
+	cd frontend && npm run dev
+
+backend-gateway: ## Roda riot-gateway
+	cd backend && RIOT_API_KEY=$${RIOT_API_KEY} REDIS_URL=redis://localhost:6379/0 NATS_URL=nats://localhost:4222 DATABASE_URL=postgres://viego:viego_secret_2024@localhost:5432/viegomains go run ./services/riot-gateway/cmd/main.go
+
+backend-champion: ## Roda champion-svc
+	cd backend && DATABASE_URL=postgres://viego:viego_secret_2024@localhost:5432/viegomains REDIS_URL=redis://localhost:6379/1 NATS_URL=nats://localhost:4222 go run ./services/champion-svc/cmd/main.go
+
+backend-player: ## Roda player-svc
+	cd backend && DATABASE_URL=postgres://viego:viego_secret_2024@localhost:5432/viegomains REDIS_URL=redis://localhost:6379/2 NATS_URL=nats://localhost:4222 CLICKHOUSE_URL=http://localhost:8123 go run ./services/player-svc/cmd/main.go
+
+backend-worker: ## Roda data-worker
+	cd backend && RIOT_API_KEY=$${RIOT_API_KEY} DATABASE_URL=postgres://viego:viego_secret_2024@localhost:5432/viegomains REDIS_URL=redis://localhost:6379/0 NATS_URL=nats://localhost:4222 CLICKHOUSE_URL=http://localhost:8123 go run ./services/data-worker/cmd/main.go
+
+setup: ## Setup inicial completo
+	@echo "Instalando dependencias do frontend..."
+	cd frontend && npm install
+	@echo "Subindo infraestrutura..."
+	$(MAKE) infra
 	@echo ""
+	@echo "Setup completo! Proximos passos:"
+	@echo "  1. Copie .env.example para .env e configure RIOT_API_KEY"
+	@echo "  2. Terminal 1: make frontend"
+	@echo "  3. Terminal 2: make backend-gateway"
+	@echo "  4. Acesse http://localhost:3000"
 
-# Development environment
-dev:
-	@echo "Starting development environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-	@echo "Development environment started!"
-	@echo "Frontend: http://localhost:3001"
-	@echo "API: http://localhost:8000"
-	@echo "Grafana: http://localhost:3000"
-	@echo "Prometheus: http://localhost:9090"
+logs: ## Mostra logs da infraestrutura
+	docker compose -f docker-compose.dev.yml logs -f
 
-# Build images
-build:
-	@echo "Building Docker images..."
-	docker-compose build --no-cache
+clean: ## Para tudo e remove volumes (CUIDADO)
+	docker compose -f docker-compose.dev.yml down -v
 
-# Start production environment
-up:
-	@echo "Starting production environment..."
-	docker-compose up -d
-	@echo "Services started!"
-	@make health
+status: ## Status dos containers
+	docker compose -f docker-compose.dev.yml ps
 
-# Stop services
-down:
-	@echo "Stopping all services..."
-	docker-compose down
+db-shell: ## Shell do PostgreSQL
+	docker compose -f docker-compose.dev.yml exec postgres psql -U viego -d viegomains
 
-# Stop without removing volumes
-stop:
-	@echo "Stopping services..."
-	docker-compose stop
-
-# Restart services
-restart: down up
-	@echo "Services restarted!"
-
-# List running containers
-ps:
-	docker-compose ps
-
-# View logs
-logs:
-	docker-compose logs -f
-
-logs-nginx:
-	docker-compose logs -f nginx
-
-logs-frontend:
-	docker-compose logs -f frontend
-
-logs-riot-gateway:
-	docker-compose logs -f riot-gateway
-
-logs-champion:
-	docker-compose logs -f champion-svc
-
-logs-player:
-	docker-compose logs -f player-svc
-
-logs-analytics:
-	docker-compose logs -f analytics-svc
-
-logs-leaderboard:
-	docker-compose logs -f leaderboard-svc
-
-logs-content:
-	docker-compose logs -f content-svc
-
-logs-data-worker:
-	docker-compose logs -f data-worker
-
-logs-postgres:
-	docker-compose logs -f postgres
-
-logs-redis:
-	docker-compose logs -f redis
-
-# Health checks
-health:
-	@echo "Checking service health..."
-	@docker-compose exec -T nginx curl -s http://localhost/health > /dev/null && echo "✓ Nginx" || echo "✗ Nginx"
-	@docker-compose exec -T riot-gateway curl -s http://localhost:8001/health > /dev/null && echo "✓ Riot Gateway" || echo "✗ Riot Gateway"
-	@docker-compose exec -T champion-svc curl -s http://localhost:8002/health > /dev/null && echo "✓ Champion Service" || echo "✗ Champion Service"
-	@docker-compose exec -T player-svc curl -s http://localhost:8003/health > /dev/null && echo "✓ Player Service" || echo "✗ Player Service"
-	@docker-compose exec -T analytics-svc curl -s http://localhost:8004/health > /dev/null && echo "✓ Analytics Service" || echo "✗ Analytics Service"
-	@docker-compose exec -T leaderboard-svc curl -s http://localhost:8005/health > /dev/null && echo "✓ Leaderboard Service" || echo "✗ Leaderboard Service"
-	@docker-compose exec -T content-svc curl -s http://localhost:8006/health > /dev/null && echo "✓ Content Service" || echo "✗ Content Service"
-	@docker-compose exec -T postgres pg_isready -U viego -d viego_db > /dev/null && echo "✓ PostgreSQL" || echo "✗ PostgreSQL"
-	@docker-compose exec -T redis redis-cli ping > /dev/null && echo "✓ Redis" || echo "✗ Redis"
-	@docker-compose exec -T clickhouse curl -s http://localhost:8123 > /dev/null && echo "✓ ClickHouse" || echo "✗ ClickHouse"
-	@docker-compose exec -T nats curl -s http://localhost:8222/varz > /dev/null && echo "✓ NATS" || echo "✗ NATS"
-
-# Database migrations
-migrate:
-	@echo "Running database migrations..."
-	docker-compose exec -T postgres psql -U viego -d viego_db -f /docker-entrypoint-initdb.d/001_initial_schema.sql
-	docker-compose exec -T postgres psql -U viego -d viego_db -f /docker-entrypoint-initdb.d/002_analytics_tables.sql
-	@echo "Migrations completed!"
-
-# Seed database
-seed:
-	@echo "Seeding database..."
-	./scripts/seed_ddragon.sh
-	docker-compose exec -T postgres psql -U viego -d viego_db -f /seeds/initial_data.sql 2>/dev/null || echo "Seed data loaded"
-	@echo "Database seeded!"
-
-# Run tests
-test:
-	@echo "Running tests..."
-	docker-compose run --rm frontend npm test
-	docker-compose run --rm backend go test ./...
-	@echo "Tests completed!"
-
-# Lint code
-lint:
-	@echo "Linting code..."
-	docker-compose run --rm frontend npm run lint
-	docker-compose run --rm backend golangci-lint run ./...
-	@echo "Linting completed!"
-
-# Clean everything
-clean:
-	@echo "Cleaning up..."
-	docker-compose down -v
-	docker system prune -f
-	@echo "Cleanup completed!"
-
-# Database shell access
-db-shell:
-	docker-compose exec postgres psql -U viego -d viego_db
-
-# Redis CLI access
-redis-cli:
-	docker-compose exec redis redis-cli
-
-# ClickHouse CLI access
-clickhouse-cli:
-	docker-compose exec clickhouse clickhouse-client
-
-# View frontend build
-frontend-build:
-	@echo "Building frontend..."
-	docker-compose run --rm frontend npm run build
-
-# View backend build
-backend-build:
-	@echo "Building backend..."
-	docker-compose run --rm backend go build -o ./bin/app ./cmd/...
-
-# Full reset (use with caution!)
-reset: clean dev migrate seed
-	@echo "Full reset completed!"
+redis-shell: ## Shell do Redis
+	docker compose -f docker-compose.dev.yml exec redis redis-cli

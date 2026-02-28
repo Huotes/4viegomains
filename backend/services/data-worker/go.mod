@@ -15,6 +15,13 @@ require (
 	github.com/spf13/viper v1.17.0
 )
 
+replace (
+	github.com/4viegomains/backend/pkg/config => ../../pkg/config
+	github.com/4viegomains/backend/pkg/database => ../../pkg/database
+	github.com/4viegomains/backend/pkg/nats => ../../pkg/nats
+	github.com/4viegomains/backend/pkg/riot => ../../pkg/riot
+)
+
 require (
 	github.com/cespare/xxhash/v2 v2.2.0
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
@@ -40,7 +47,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/subosito/gotenv v1.6.0
 	golang.org/x/crypto v0.17.0
-	golang.org/x/exp v0.0.0-20231217203849-ea32a836e830
+	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3
 	golang.org/x/sync v0.5.0
 	golang.org/x/sys v0.15.0
 	golang.org/x/text v0.14.0
