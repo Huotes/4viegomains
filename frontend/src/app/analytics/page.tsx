@@ -1,116 +1,125 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { SkeletonCard } from '@/components/ui/Loading'
+'use client'
 
-export const metadata = {
-  title: 'Viego Analytics Dashboard — 4ViegoMains',
-  description:
-    'Comprehensive Viego analytics including meta stats, win rates by role, and patch impact analysis.',
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { RoleComparison } from '@/components/analytics/RoleComparison'
+import { WinRateTrend } from '@/components/analytics/WinRateTrend'
+import { EloDistribution } from '@/components/analytics/EloDistribution'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import { getMockMetaStats, getMockMetaTrends } from '@/lib/mockData'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export default function AnalyticsPage(): React.ReactElement {
+  const metaStats = getMockMetaStats()
+  const trends = getMockMetaTrends()
+
+  const roleComparisonData = Object.values(metaStats.byRole).map((r) => ({
+    role: r.role.charAt(0).toUpperCase() + r.role.slice(1),
+    winRate: r.winRate * 100,
+    pickRate: r.pickRate * 100,
+    banRate: r.banRate * 100,
+  }))
+
+  const trendData = trends.map((t) => ({
+    date: t.date.split('-')[2],
+    winRate: t.winRate * 100,
+    pickRate: t.pickRate * 100,
+  }))
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-shadow-black to-shadow-dark">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="font-cinzel text-4xl font-bold gradient-text-soul mb-2">
-            Analytics Dashboard
-          </h1>
-          <p className="text-gray-400">
-            Real-time Viego meta analysis across all roles and regions.
-          </p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <Link href="/" className="flex items-center gap-2 text-mist-cyan hover:text-mist-green mb-4 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+
+          <h1 className="font-cinzel text-4xl font-bold gradient-text-soul mb-2">Viego Analytics</h1>
+          <p className="text-gray-400">Deep dive into Viego's meta statistics and performance trends</p>
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Card glow="mist">
-            <CardContent className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">Overall Win Rate</p>
-                <p className="text-3xl font-bold gradient-text-mist">52.3%</p>
-              </div>
-              <div className="text-4xl opacity-20">📊</div>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-400">Overall Win Rate</p>
+              <p className="text-3xl font-bold text-mist-green">{(metaStats.overallWinRate * 100).toFixed(1)}%</p>
             </CardContent>
           </Card>
-
-          <Card glow="ruination">
-            <CardContent className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">Average Pick Rate</p>
-                <p className="text-3xl font-bold gradient-text-ruination">8.7%</p>
-              </div>
-              <div className="text-4xl opacity-20">📈</div>
+          <Card glow="mist">
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-400">Pick Rate</p>
+              <p className="text-3xl font-bold text-mist-cyan">{(metaStats.overallPickRate * 100).toFixed(1)}%</p>
             </CardContent>
           </Card>
-
           <Card glow="mist">
-            <CardContent className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">Average Ban Rate</p>
-                <p className="text-3xl font-bold gradient-text-mist">12.1%</p>
-              </div>
-              <div className="text-4xl opacity-20">🚫</div>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-400">Ban Rate</p>
+              <p className="text-3xl font-bold text-soul-gold">{(metaStats.overallBanRate * 100).toFixed(1)}%</p>
+            </CardContent>
+          </Card>
+          <Card glow="mist">
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-400">Patch Version</p>
+              <p className="text-3xl font-bold text-ruination-purple">{metaStats.patchVersion}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <Card glow="mist">
-            <CardHeader>
-              <CardTitle>Win Rate Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <SkeletonCard count={2} />
-              </div>
-            </CardContent>
-          </Card>
+        {/* Charts */}
+        <div className="space-y-6">
+          <RoleComparison data={roleComparisonData} />
+          <WinRateTrend data={trendData} />
+          <EloDistribution />
 
-          <Card glow="ruination">
-            <CardHeader>
-              <CardTitle>Pick Rate by Role</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <SkeletonCard count={2} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Role Statistics */}
-        <div className="mb-12">
-          <h2 className="font-cinzel text-2xl font-bold mb-6 gradient-text-soul">Stats by Role</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {['Top', 'Jungle', 'Mid', 'Bot', 'Support'].map((role) => (
-              <Card key={role} glow="mist">
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-cinzel font-bold">{role}</h3>
-                    <Badge variant="default" className="text-xs">
-                      {(Math.random() * 20 + 45).toFixed(1)}%
-                    </Badge>
+          {/* Item & Rune Efficiency */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card glow="mist">
+              <CardHeader>
+                <CardTitle>Top Items by Pick Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { name: 'Trinity Force', pickRate: 85 },
+                  { name: 'Black Cleaver', pickRate: 72 },
+                  { name: 'Spirit Visage', pickRate: 68 },
+                  { name: 'Void Staff', pickRate: 62 },
+                ].map((item) => (
+                  <div key={item.name}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300">{item.name}</span>
+                      <span className="text-sm font-semibold text-mist-green">{item.pickRate}%</span>
+                    </div>
+                    <ProgressBar value={item.pickRate} max={100} />
                   </div>
-                  <SkeletonCard count={2} />
-                </CardContent>
-              </Card>
-            ))}
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card glow="mist">
+              <CardHeader>
+                <CardTitle>Top Runes by Pick Rate</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { name: 'Conqueror', pickRate: 88 },
+                  { name: 'Triumph', pickRate: 78 },
+                  { name: 'Legend: Alacrity', pickRate: 75 },
+                  { name: 'Bone Plating', pickRate: 68 },
+                ].map((rune) => (
+                  <div key={rune.name}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300">{rune.name}</span>
+                      <span className="text-sm font-semibold text-mist-cyan">{rune.pickRate}%</span>
+                    </div>
+                    <ProgressBar value={rune.pickRate} max={100} />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        {/* Item Statistics */}
-        <Card glow="mist">
-          <CardHeader>
-            <CardTitle>Top Items by Popularity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <SkeletonCard count={5} />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

@@ -35,39 +35,40 @@ export function RoleComparison({ data = defaultData }: RoleComparisonProps): Rea
   return (
     <Card glow="mist">
       <CardHeader>
-        <CardTitle>Win Rate by Role</CardTitle>
+        <CardTitle>Performance by Role</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#1a1a24"
-              vertical={false}
+              stroke="rgba(0, 255, 135, 0.1)"
             />
             <XAxis
               dataKey="role"
-              stroke="#888888"
-              style={{ fontSize: '12px' }}
+              tick={{
+                fill: 'rgba(200, 200, 200, 0.8)',
+                fontSize: 12,
+              }}
             />
             <YAxis
-              stroke="#888888"
-              style={{ fontSize: '12px' }}
-              domain={[0, 60]}
-              label={{ value: 'Rate (%)', angle: -90, position: 'insideLeft' }}
+              tick={{
+                fill: 'rgba(150, 150, 150, 0.6)',
+                fontSize: 10,
+              }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1a1a24',
-                border: '1px solid #00ff87',
+                backgroundColor: 'rgba(18, 18, 24, 0.95)',
+                border: '1px solid rgba(0, 255, 135, 0.3)',
                 borderRadius: '8px',
               }}
               labelStyle={{ color: '#00ff87' }}
             />
             <Legend />
-            <Bar dataKey="winRate" fill="#00ff87" name="Win Rate" />
-            <Bar dataKey="pickRate" fill="#00e5ff" name="Pick Rate" />
-            <Bar dataKey="banRate" fill="#7c4dff" name="Ban Rate" />
+            <Bar dataKey="winRate" fill="#00ff87" name="Win Rate %" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="pickRate" fill="#00e5ff" name="Pick Rate %" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="banRate" fill="#7c4dff" name="Ban Rate %" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

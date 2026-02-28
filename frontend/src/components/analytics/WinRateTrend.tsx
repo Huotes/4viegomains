@@ -40,30 +40,36 @@ export function WinRateTrend({ data = defaultData }: WinRateTrendProps): React.R
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
+          <LineChart
+            data={data}
+            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+          >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#1a1a24"
+              stroke="rgba(0, 255, 135, 0.1)"
               vertical={false}
             />
             <XAxis
               dataKey="date"
-              stroke="#888888"
-              style={{ fontSize: '12px' }}
+              tick={{
+                fill: 'rgba(200, 200, 200, 0.8)',
+                fontSize: 12,
+              }}
             />
             <YAxis
-              stroke="#888888"
-              style={{ fontSize: '12px' }}
+              tick={{
+                fill: 'rgba(150, 150, 150, 0.6)',
+                fontSize: 10,
+              }}
               domain={[48, 54]}
-              label={{ value: 'Rate (%)', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#1a1a24',
-                border: '1px solid #7c4dff',
+                backgroundColor: 'rgba(18, 18, 24, 0.95)',
+                border: '1px solid rgba(0, 255, 135, 0.3)',
                 borderRadius: '8px',
               }}
-              labelStyle={{ color: '#7c4dff' }}
+              labelStyle={{ color: '#00ff87' }}
             />
             <Legend />
             <Line
@@ -72,7 +78,7 @@ export function WinRateTrend({ data = defaultData }: WinRateTrendProps): React.R
               stroke="#00ff87"
               strokeWidth={2}
               dot={{ fill: '#00ff87', r: 4 }}
-              name="Win Rate"
+              name="Win Rate %"
             />
             <Line
               type="monotone"
@@ -80,7 +86,7 @@ export function WinRateTrend({ data = defaultData }: WinRateTrendProps): React.R
               stroke="#4fc3f7"
               strokeWidth={2}
               dot={{ fill: '#4fc3f7', r: 4 }}
-              name="Pick Rate"
+              name="Pick Rate %"
             />
           </LineChart>
         </ResponsiveContainer>

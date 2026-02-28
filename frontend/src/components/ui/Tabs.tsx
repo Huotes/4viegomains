@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 
 interface Tab {
@@ -14,6 +14,8 @@ interface TabsProps {
   defaultTab?: string
   onTabChange?: (tabId: string) => void
   children: React.ReactNode
+  variant?: 'default' | 'pills'
+  fullWidth?: boolean
 }
 
 export function Tabs({
@@ -21,8 +23,22 @@ export function Tabs({
   defaultTab,
   onTabChange,
   children,
+  variant = 'default',
+  fullWidth = false,
 }: TabsProps): React.ReactElement {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id)
+  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id)
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: '0px', left: '0px' })
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+
+  useEffect(() => {
+    const activeButton = tabRefs.current[activeTab]
+    if (activeButton) {
+      setIndicatorStyle({
+        width: `${activeButton.offsetWidth}px`,
+        left: `${activeButton.offsetLeft}px`,
+      })
+    }
+  }, [activeTab])
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
@@ -31,24 +47,48 @@ export function Tabs({
 
   return (
     <div className="w-full">
-      <div className="flex border-b border-shadow-light">
+      <div
+        className={cn(
+          'relative flex overflow-x-auto',
+          variant === 'default' && 'border-b border-mist-green/20'
+        )}
+      >
+        {/* Animated Indicator */}
+        {variant === 'default' && (
+          <div
+            className="absolute bottom-0 h-1 bg-gradient-to-r from-mist-green to-mist-cyan transition-all duration-300"
+            style={{
+              width: indicatorStyle.width,
+              left: indicatorStyle.left,
+            }}
+          />
+        )}
+
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            ref={(el) => {
+              if (el) tabRefs.current[tab.id] = el
+            }}
             onClick={() => handleTabChange(tab.id)}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 font-semibold transition-all border-b-2 relative',
+              'relative flex items-center gap-2 px-4 py-3 font-semibold transition-all duration-300 whitespace-nowrap',
+              fullWidth && 'flex-1',
               activeTab === tab.id
-                ? 'text-mist-green border-b-mist-green mist-glow-active'
-                : 'text-gray-400 border-b-transparent hover:text-mist-cyan border-b-shadow-light'
+                ? variant === 'pills'
+                  ? 'bg-gradient-to-r from-mist-green to-mist-cyan text-shadow-black'
+                  : 'text-mist-green'
+                : 'text-gray-400 hover:text-mist-cyan',
+              variant === 'pills' && activeTab === tab.id && 'rounded-lg',
+              variant === 'pills' && activeTab !== tab.id && 'hover:bg-shadow-light/30 rounded-lg'
             )}
           >
-            {tab.icon}
-            {tab.label}
+            {tab.icon && <span className="flex-shrink-0">{tab.icon}</span>}
+            <span className="text-sm md:text-base">{tab.label}</span>
           </button>
         ))}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-4 md:mt-6 animate-fade-in-up">{children}</div>
     </div>
   )
 }

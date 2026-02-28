@@ -48,7 +48,14 @@ export function LeaderboardTable({
                   className="border-b border-shadow-light/30 hover:bg-shadow-light/20 transition-colors"
                 >
                   <td className="py-4 px-6">
-                    <span className="text-soul-gold font-bold text-lg">#{entry.rank}</span>
+                    <span className={`font-bold text-lg ${
+                      entry.rank === 1 ? 'text-soul-gold' :
+                      entry.rank === 2 ? 'text-gray-300' :
+                      entry.rank === 3 ? 'text-orange-600' :
+                      'text-gray-500'
+                    }`}>
+                      #{entry.rank}
+                    </span>
                   </td>
                   <td className="py-4 px-6">
                     <Link
