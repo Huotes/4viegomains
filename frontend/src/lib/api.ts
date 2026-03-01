@@ -21,7 +21,7 @@ import { API_CONFIG, PAGINATION_DEFAULTS } from './constants'
 const baseURL = API_CONFIG.baseUrl
 
 /**
- * Fetch wrapper with error handling
+ * Fetch wrapper with error handling and timeout
  */
 async function fetchAPI<T>(
   endpoint: string,
@@ -29,14 +29,20 @@ async function fetchAPI<T>(
 ): Promise<T> {
   const url = `${baseURL}${endpoint}`
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout)
+
   try {
     const response = await fetch(url, {
       ...options,
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
       },
     })
+
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: response.statusText }))
@@ -45,8 +51,12 @@ async function fetchAPI<T>(
 
     return await response.json()
   } catch (error) {
+    clearTimeout(timeoutId)
     if (error instanceof ApiError) {
       throw error
+    }
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Request timed out', 408)
     }
     throw new ApiError(
       error instanceof Error ? error.message : 'Unknown error occurred'
@@ -54,9 +64,10 @@ async function fetchAPI<T>(
   }
 }
 
-/**
- * Builds API
- */
+// ──────────────────────────────────────────────
+// Champion Service Endpoints (champion-svc:8082)
+// Nginx: /api/v1/champion/ → champion-svc
+// ──────────────────────────────────────────────
 
 export async function getBuilds(
   role?: Role,
@@ -67,17 +78,12 @@ export async function getBuilds(
   if (role) params.append('role', role)
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
-  return fetchAPI(`/builds?${params.toString()}`)
+  return fetchAPI(`/champion/builds?${params.toString()}`)
 }
 
 export async function getBuildByRole(role: Role): Promise<ApiResponse<ViegoBuild>> {
-  return fetchAPI(`/builds/${role}`)
+  return fetchAPI(`/champion/builds?role=${role}`)
 }
-
-/**
- * Runes API
- */
 
 export async function getRunes(
   role?: Role,
@@ -88,17 +94,12 @@ export async function getRunes(
   if (role) params.append('role', role)
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
-  return fetchAPI(`/runes?${params.toString()}`)
+  return fetchAPI(`/champion/runes?${params.toString()}`)
 }
 
 export async function getRunesByRole(role: Role): Promise<ApiResponse<ViegoRunes>> {
-  return fetchAPI(`/runes/${role}`)
+  return fetchAPI(`/champion/runes?role=${role}`)
 }
-
-/**
- * Matchups API
- */
 
 export async function getMatchups(
   role?: Role,
@@ -109,24 +110,89 @@ export async function getMatchups(
   if (role) params.append('role', role)
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
-  return fetchAPI(`/matchups?${params.toString()}`)
+  return fetchAPI(`/champion/counters?${params.toString()}`)
 }
 
 export async function getMatchupsByRole(role: Role): Promise<ApiResponse<Matchup[]>> {
-  return fetchAPI(`/matchups/${role}`)
+  return fetchAPI(`/champion/counters?role=${role}`)
 }
 
-/**
- * Player Profile API
- */
+export async function getChampionStats(role?: Role): Promise<ApiResponse<MetaStats>> {
+  const params = new URLSearchParams()
+  if (role) params.append('role', role)
+  return fetchAPI(`/champion/stats?${params.toString()}`)
+}
+
+export async function getItems(
+  role?: Role,
+  stage?: string
+): Promise<ApiResponse<any>> {
+  const params = new URLSearchParams()
+  if (role) params.append('role', role)
+  if (stage) params.append('stage', stage)
+  return fetchAPI(`/champion/items?${params.toString()}`)
+}
+
+export async function getSkills(role?: Role): Promise<ApiResponse<any>> {
+  const params = new URLSearchParams()
+  if (role) params.append('role', role)
+  return fetchAPI(`/champion/skills?${params.toString()}`)
+}
+
+export async function getSummonerSpells(role?: Role): Promise<ApiResponse<any>> {
+  const params = new URLSearchParams()
+  if (role) params.append('role', role)
+  return fetchAPI(`/champion/summoner-spells?${params.toString()}`)
+}
+
+// ──────────────────────────────────────────────
+// Player Service Endpoints (player-svc:8083)
+// Nginx: /api/v1/player/ → player-svc
+// ──────────────────────────────────────────────
 
 export async function getPlayerProfile(
   name: string,
   tag: string,
   region: Region
 ): Promise<ApiResponse<PlayerProfile>> {
-  return fetchAPI(`/players/${region}/${name}/${tag}`)
+  return fetchAPI(`/player/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}/profile`)
+}
+
+export async function getPlayerMatches(
+  name: string,
+  tag: string,
+  region: Region,
+  page: number = 1,
+  limit: number = 20
+): Promise<PaginatedResponse<MatchSummary>> {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  params.append('limit', limit.toString())
+  return fetchAPI(`/player/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}/matches?${params.toString()}`)
+}
+
+export async function getPlayerPerformance(
+  name: string,
+  tag: string,
+  region: Region
+): Promise<ApiResponse<any>> {
+  return fetchAPI(`/player/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}/performance`)
+}
+
+export async function getPlayerRoles(
+  name: string,
+  tag: string,
+  region: Region
+): Promise<ApiResponse<any>> {
+  return fetchAPI(`/player/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}/roles`)
+}
+
+export async function getPlayerTrends(
+  name: string,
+  tag: string,
+  region: Region
+): Promise<ApiResponse<any>> {
+  return fetchAPI(`/player/${region}/${encodeURIComponent(name)}/${encodeURIComponent(tag)}/trends`)
 }
 
 export async function searchPlayers(
@@ -138,37 +204,14 @@ export async function searchPlayers(
   params.append('q', query)
   if (region) params.append('region', region)
   params.append('limit', limit.toString())
-
-  return fetchAPI(`/players/search?${params.toString()}`)
+  return fetchAPI(`/player/search?${params.toString()}`)
 }
 
-/**
- * Player Matches API
- */
-
-export async function getPlayerMatches(
-  summonerId: string,
-  region: Region,
-  page: number = 1,
-  limit: number = 20
-): Promise<PaginatedResponse<MatchSummary>> {
-  const params = new URLSearchParams()
-  params.append('page', page.toString())
-  params.append('limit', limit.toString())
-
-  return fetchAPI(`/players/${region}/${summonerId}/matches?${params.toString()}`)
-}
-
-export async function getMatchDetails(
-  matchId: string,
-  region: Region
-): Promise<ApiResponse<MatchSummary>> {
-  return fetchAPI(`/matches/${region}/${matchId}`)
-}
-
-/**
- * Leaderboard API
- */
+// ──────────────────────────────────────────────
+// Leaderboard Service Endpoints (leaderboard-svc:8085)
+// Nginx: /api/v1/leaderboard/ → leaderboard-svc
+// Note: Currently a stub — returns placeholder data
+// ──────────────────────────────────────────────
 
 export async function getLeaderboard(
   region: Region,
@@ -178,7 +221,6 @@ export async function getLeaderboard(
   const params = new URLSearchParams()
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
   return fetchAPI(`/leaderboard/${region}?${params.toString()}`)
 }
 
@@ -189,20 +231,20 @@ export async function getGlobalLeaderboard(
   const params = new URLSearchParams()
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
   return fetchAPI(`/leaderboard/global?${params.toString()}`)
 }
 
-/**
- * Analytics API
- */
+// ──────────────────────────────────────────────
+// Analytics Service Endpoints (analytics-svc:8084)
+// Nginx: /api/v1/analytics/ → analytics-svc
+// Note: Currently a stub — fallback to champion-svc /stats
+// ──────────────────────────────────────────────
 
 export async function getAnalytics(
   role?: Role
 ): Promise<ApiResponse<MetaStats>> {
   const params = new URLSearchParams()
   if (role) params.append('role', role)
-
   return fetchAPI(`/analytics?${params.toString()}`)
 }
 
@@ -215,7 +257,6 @@ export async function getMetaTrend(
 ): Promise<ApiResponse<MetaTrend[]>> {
   const params = new URLSearchParams()
   params.append('days', days.toString())
-
   return fetchAPI(`/analytics/trend?${params.toString()}`)
 }
 
@@ -224,13 +265,14 @@ export async function getPatchImpact(
 ): Promise<ApiResponse<PatchImpact>> {
   const params = new URLSearchParams()
   if (patchVersion) params.append('patch', patchVersion)
-
   return fetchAPI(`/analytics/patch-impact?${params.toString()}`)
 }
 
-/**
- * Guides API
- */
+// ──────────────────────────────────────────────
+// Content Service Endpoints (content-svc:8086)
+// Nginx: /api/v1/content/ → content-svc
+// Note: Currently a stub
+// ──────────────────────────────────────────────
 
 export async function getGuides(
   role?: Role,
@@ -241,43 +283,29 @@ export async function getGuides(
   if (role) params.append('role', role)
   params.append('page', page.toString())
   params.append('limit', limit.toString())
-
-  return fetchAPI(`/guides?${params.toString()}`)
+  return fetchAPI(`/content/guides?${params.toString()}`)
 }
 
 export async function getGuideById(guideId: string): Promise<ApiResponse<Guide>> {
-  return fetchAPI(`/guides/${guideId}`)
+  return fetchAPI(`/content/guides/${guideId}`)
 }
 
 export async function getGuidesByRole(role: Role): Promise<ApiResponse<Guide[]>> {
-  return fetchAPI(`/guides/role/${role}`)
+  return fetchAPI(`/content/guides/role/${role}`)
 }
 
-/**
- * Health Check API
- */
+// ──────────────────────────────────────────────
+// Health Check
+// ──────────────────────────────────────────────
 
 export async function healthCheck(): Promise<ApiResponse<{ status: string }>> {
   return fetchAPI('/health')
 }
 
-/**
- * Stats Tracking API (optional)
- */
+// ──────────────────────────────────────────────
+// Client-side Cache Utility
+// ──────────────────────────────────────────────
 
-export async function recordViewEvent(
-  resourceType: string,
-  resourceId: string
-): Promise<ApiResponse<{ recorded: boolean }>> {
-  return fetchAPI('/events/view', {
-    method: 'POST',
-    body: JSON.stringify({ resourceType, resourceId }),
-  })
-}
-
-/**
- * Cache utility for client-side caching
- */
 interface CacheEntry<T> {
   data: T
   timestamp: number
@@ -321,9 +349,6 @@ export function clearCache(pattern?: string): void {
   }
 }
 
-/**
- * Type guard for API errors
- */
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError
 }

@@ -4,16 +4,17 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { RoleBadge, Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { LoadingSpinner } from '@/components/ui/Loading'
 import type { Role } from '@/lib/types'
 import { ROLE_LABELS, ROLES, DIFFICULTY_LABELS } from '@/lib/constants'
-import { getMockMatchups } from '@/lib/mockData'
+import { useViegoMatchups } from '@/hooks/useViegoMatchups'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 interface MatchupsPageProps {
-  params: Promise<{
-    role: string
-  }>
+  params: Promise<{ role: string }>
 }
 
 export default function MatchupsPage({ params }: MatchupsPageProps): React.ReactElement {
@@ -22,9 +23,11 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
   const isValidRole = ROLES.includes(role)
   const [selectedTab, setSelectedTab] = useState('best')
 
-  const matchups = getMockMatchups(role)
+  const { matchups, loading, error, refetch } = useViegoMatchups({ role, skip: !isValidRole })
+
   const bestMatchups = matchups.filter(m => m.difficulty === 'easy').sort((a, b) => b.winRate - a.winRate)
   const worstMatchups = matchups.filter(m => m.difficulty === 'hard').sort((a, b) => a.winRate - b.winRate)
+  const allMatchups = selectedTab === 'best' ? bestMatchups : selectedTab === 'worst' ? worstMatchups : matchups
 
   if (!isValidRole) {
     return (
@@ -47,16 +50,11 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
-
           <div className="flex items-center gap-4 mb-4">
-            <h1 className="font-cinzel text-4xl font-bold gradient-text-soul">
-              {ROLE_LABELS[role]} Matchups
-            </h1>
+            <h1 className="font-cinzel text-4xl font-bold gradient-text-soul">{ROLE_LABELS[role]} Matchups</h1>
             <RoleBadge role={role} />
           </div>
-          <p className="text-gray-400">
-            Analyze how Viego fares against enemy champions in {ROLE_LABELS[role]}.
-          </p>
+          <p className="text-gray-400">Analyze how Viego fares against enemy champions in {ROLE_LABELS[role]}.</p>
         </div>
 
         <div className="flex gap-2 mb-8 flex-wrap">
@@ -74,6 +72,7 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
             {[
               { id: 'best', label: 'Best Matchups' },
               { id: 'worst', label: 'Worst Matchups' },
+              { id: 'all', label: 'All Matchups' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -90,35 +89,48 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {(selectedTab === 'best' ? bestMatchups : worstMatchups).map((matchup) => (
-            <Card key={matchup.id} glow="mist">
-              <CardContent className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">{matchup.enemyChampionName}</h3>
-                    <Badge variant="status">{DIFFICULTY_LABELS[matchup.difficulty]}</Badge>
+        {loading ? (
+          <LoadingSpinner text="Loading matchup data..." quote />
+        ) : error ? (
+          <ErrorState message={error} onRetry={refetch} />
+        ) : allMatchups.length === 0 ? (
+          <EmptyState
+            title={selectedTab === 'all' ? 'No matchup data' : `No ${selectedTab} matchups found`}
+            message={`Matchup data for ${ROLE_LABELS[role]} is being collected from ranked matches.`}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {allMatchups.map((matchup) => (
+              <Card key={matchup.id} glow="mist">
+                <CardContent className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-1">{matchup.enemyChampionName}</h3>
+                      <Badge variant="status">{DIFFICULTY_LABELS[matchup.difficulty]}</Badge>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-mist-green">{(matchup.winRate * 100).toFixed(1)}%</p>
+                      <p className="text-xs text-gray-400">{matchup.matchCount.toLocaleString()} games</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-mist-green">{(matchup.winRate * 100).toFixed(1)}%</p>
-                    <p className="text-xs text-gray-400">{matchup.matchCount} games</p>
-                  </div>
-                </div>
-                <ProgressBar value={matchup.winRate * 100} max={100} />
-                <div className="bg-shadow-light/20 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-2">Tips:</p>
-                  <ul className="text-xs space-y-1">
-                    {matchup.tips.slice(0, 2).map((tip, idx) => (
-                      <li key={idx} className="text-gray-300 flex gap-2">
-                        <span className="text-mist-green">●</span> {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <ProgressBar value={matchup.winRate * 100} max={100} />
+                  {matchup.tips?.length > 0 && (
+                    <div className="bg-shadow-light/20 rounded p-3">
+                      <p className="text-xs text-gray-400 mb-2">Tips:</p>
+                      <ul className="text-xs space-y-1">
+                        {matchup.tips.slice(0, 3).map((tip, idx) => (
+                          <li key={idx} className="text-gray-300 flex gap-2">
+                            <span className="text-mist-green">●</span> {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

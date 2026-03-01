@@ -22,17 +22,22 @@ interface WinRateTrendProps {
   data?: TrendData[]
 }
 
-const defaultData: TrendData[] = [
-  { date: 'Day 1', winRate: 50.8, pickRate: 7.8 },
-  { date: 'Day 2', winRate: 51.2, pickRate: 8.1 },
-  { date: 'Day 3', winRate: 51.5, pickRate: 8.4 },
-  { date: 'Day 4', winRate: 51.8, pickRate: 8.7 },
-  { date: 'Day 5', winRate: 52.1, pickRate: 8.9 },
-  { date: 'Day 6', winRate: 52.3, pickRate: 9.1 },
-  { date: 'Day 7', winRate: 52.5, pickRate: 9.3 },
-]
+export function WinRateTrend({ data }: WinRateTrendProps): React.ReactElement {
+  if (!data || data.length === 0) {
+    return (
+      <Card glow="ruination">
+        <CardHeader>
+          <CardTitle>Win Rate Trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[300px] text-gray-500 text-sm">
+            Trend data will appear once enough matches are analyzed.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
-export function WinRateTrend({ data = defaultData }: WinRateTrendProps): React.ReactElement {
   return (
     <Card glow="ruination">
       <CardHeader>

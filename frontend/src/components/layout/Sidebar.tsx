@@ -124,9 +124,9 @@ export function Sidebar(): React.ReactElement {
         <p className="text-xs text-soul-gold font-semibold uppercase tracking-wider mb-1">
           Patch Info
         </p>
-        <p className="text-sm font-mono text-white mb-2">14.3.1</p>
+        <p className="text-sm font-mono text-white mb-2">Live Data</p>
         <p className="text-xs text-gray-400 leading-relaxed">
-          Latest statistics updated. Data reflects competitive play across all regions.
+          Statistics fetched from API. Data reflects competitive play across all regions.
         </p>
       </div>
 

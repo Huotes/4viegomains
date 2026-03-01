@@ -1,12 +1,53 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge, RoleBadge, StatBadge } from '@/components/ui/Badge'
+import { Badge, RoleBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { EmptyState } from '@/components/ui/EmptyState'
+
 import { ArrowRight, TrendingUp, Target, Crown } from 'lucide-react'
 import Link from 'next/link'
 import { ROLES, ROLE_LABELS, VIEGO_QUOTES } from '@/lib/constants'
+import { useChampionStats } from '@/hooks/useChampionStats'
+import { formatWinRate } from '@/lib/utils'
 import type { Role } from '@/lib/types'
 
+function StatCardSkeleton() {
+  return (
+    <Card glow="mist">
+      <CardContent className="flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="h-3 w-16 rounded bg-shadow-light/40 animate-pulse" />
+          <div className="h-8 w-24 rounded bg-shadow-light/40 animate-pulse" />
+          <div className="h-3 w-20 rounded bg-shadow-light/40 animate-pulse" />
+        </div>
+        <div className="h-12 w-12 rounded-full bg-shadow-light/20 animate-pulse" />
+      </CardContent>
+    </Card>
+  )
+}
+
+function RoleCardSkeleton() {
+  return (
+    <Card glow="mist">
+      <CardContent className="flex flex-col items-center text-center gap-3">
+        <div className="h-10 w-10 rounded bg-shadow-light/40 animate-pulse" />
+        <div className="h-5 w-20 rounded bg-shadow-light/40 animate-pulse" />
+        <div className="h-5 w-16 rounded bg-shadow-light/40 animate-pulse" />
+        <div className="space-y-2 w-full">
+          <div className="h-4 w-full rounded bg-shadow-light/30 animate-pulse" />
+          <div className="h-4 w-full rounded bg-shadow-light/30 animate-pulse" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function HomePage(): React.ReactElement {
+  const { stats, loading, error, refetch } = useChampionStats()
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-shadow-black via-shadow-dark to-shadow-black">
       {/* Hero Section */}
@@ -36,7 +77,7 @@ export default function HomePage(): React.ReactElement {
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link href="/builds/top">
+              <Link href="/builds/jungle">
                 <Button size="lg" icon={<ArrowRight className="h-5 w-5" />}>
                   View Builds
                 </Button>
@@ -49,51 +90,81 @@ export default function HomePage(): React.ReactElement {
             </div>
           </div>
 
-          {/* Meta Stats */}
+          {/* Meta Stats — fetched from API */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            <Card glow="mist">
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
-                    Win Rate
-                  </p>
-                  <p className="text-3xl font-bold gradient-text-mist">52.3%</p>
-                  <p className="text-xs text-green-400 mt-1">↑ 1.2% this patch</p>
-                </div>
-                <Target className="h-12 w-12 text-mist-green opacity-30" />
-              </CardContent>
-            </Card>
+            {loading ? (
+              <>
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+              </>
+            ) : error ? (
+              <div className="col-span-3">
+                <ErrorState message={error} onRetry={refetch} />
+              </div>
+            ) : stats ? (
+              <>
+                <Card glow="mist">
+                  <CardContent className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
+                        Win Rate
+                      </p>
+                      <p className="text-3xl font-bold gradient-text-mist">
+                        <AnimatedCounter value={stats.overallWinRate * 100} suffix="%" />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patch {stats.patchVersion}
+                      </p>
+                    </div>
+                    <Target className="h-12 w-12 text-mist-green opacity-30" />
+                  </CardContent>
+                </Card>
 
-            <Card glow="ruination">
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
-                    Pick Rate
-                  </p>
-                  <p className="text-3xl font-bold gradient-text-ruination">8.7%</p>
-                  <p className="text-xs text-green-400 mt-1">↑ 0.8% this patch</p>
-                </div>
-                <TrendingUp className="h-12 w-12 text-ruination-purple opacity-30" />
-              </CardContent>
-            </Card>
+                <Card glow="ruination">
+                  <CardContent className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
+                        Pick Rate
+                      </p>
+                      <p className="text-3xl font-bold gradient-text-ruination">
+                        <AnimatedCounter value={stats.overallPickRate * 100} suffix="%" />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patch {stats.patchVersion}
+                      </p>
+                    </div>
+                    <TrendingUp className="h-12 w-12 text-ruination-purple opacity-30" />
+                  </CardContent>
+                </Card>
 
-            <Card glow="mist">
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
-                    Ban Rate
-                  </p>
-                  <p className="text-3xl font-bold gradient-text-mist">12.1%</p>
-                  <p className="text-xs text-red-400 mt-1">↑ 2.3% this patch</p>
-                </div>
-                <Crown className="h-12 w-12 text-soul-gold opacity-30" />
-              </CardContent>
-            </Card>
+                <Card glow="mist">
+                  <CardContent className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-mist-cyan/70 uppercase tracking-wider mb-2">
+                        Ban Rate
+                      </p>
+                      <p className="text-3xl font-bold gradient-text-mist">
+                        <AnimatedCounter value={stats.overallBanRate * 100} suffix="%" />
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patch {stats.patchVersion}
+                      </p>
+                    </div>
+                    <Crown className="h-12 w-12 text-soul-gold opacity-30" />
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <div className="col-span-3">
+                <EmptyState title="No stats yet" message="Stats will appear once data is collected from ranked matches." />
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Roles Overview */}
+      {/* Roles Overview — data from API */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-shadow-dark/40">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12">
@@ -106,40 +177,43 @@ export default function HomePage(): React.ReactElement {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {ROLES.map((role: Role) => (
-              <Card key={role} glow="mist" className="hover:mist-glow-active transition-all">
-                <CardContent className="flex flex-col items-center text-center gap-3">
-                  <div className="text-4xl mb-2">
-                    {
-                      {
-                        top: '⚔️',
-                        jungle: '🌲',
-                        mid: '✨',
-                        bot: '🏹',
-                        support: '🛡️',
-                      }[role]
-                    }
-                  </div>
-                  <h3 className="font-cinzel font-bold text-lg">{ROLE_LABELS[role]}</h3>
-                  <RoleBadge role={role} />
-                  <div className="space-y-2 w-full text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Win Rate:</span>
-                      <span className="text-mist-green font-semibold">51.8%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Pick Rate:</span>
-                      <span className="text-mist-cyan font-semibold">8.3%</span>
-                    </div>
-                  </div>
-                  <Link href={`/builds/${role}`} className="w-full mt-2">
-                    <Button variant="ghost" size="sm" className="w-full">
-                      View Build →
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              ROLES.map((role) => <RoleCardSkeleton key={role} />)
+            ) : (
+              ROLES.map((role: Role) => {
+                const roleData = stats?.byRole?.[role]
+                return (
+                  <Card key={role} glow="mist" className="hover:mist-glow-active transition-all">
+                    <CardContent className="flex flex-col items-center text-center gap-3">
+                      <div className="text-4xl mb-2">
+                        {{ top: '\u2694\uFE0F', jungle: '\uD83C\uDF32', mid: '\u2728', bot: '\uD83C\uDFF9', support: '\uD83D\uDEE1\uFE0F' }[role]}
+                      </div>
+                      <h3 className="font-cinzel font-bold text-lg">{ROLE_LABELS[role]}</h3>
+                      <RoleBadge role={role} />
+                      <div className="space-y-2 w-full text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Win Rate:</span>
+                          <span className="text-mist-green font-semibold">
+                            {roleData ? formatWinRate(roleData.winRate) : '—'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Pick Rate:</span>
+                          <span className="text-mist-cyan font-semibold">
+                            {roleData ? formatWinRate(roleData.pickRate) : '—'}
+                          </span>
+                        </div>
+                      </div>
+                      <Link href={`/builds/${role}`} className="w-full mt-2">
+                        <Button variant="ghost" size="sm" className="w-full">
+                          View Build →
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
           </div>
         </div>
       </section>
@@ -165,7 +239,7 @@ export default function HomePage(): React.ReactElement {
                 <p className="text-gray-400 text-sm">
                   See how Viego fares against every champion in the game with detailed strategies.
                 </p>
-                <Link href="/matchups/top">
+                <Link href="/matchups/jungle">
                   <Button variant="ghost" size="sm" className="gap-2">
                     View Matchups
                     <ArrowRight className="h-4 w-4" />
@@ -211,69 +285,52 @@ export default function HomePage(): React.ReactElement {
         </div>
       </section>
 
-      {/* Recent Patches */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-shadow-dark/40">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h2 className="font-cinzel text-3xl font-bold mb-2 gradient-text-soul">
-              Latest Patch Impact
-            </h2>
-            <p className="text-gray-400">
-              How recent changes affect Viego's viability
-            </p>
+      {/* Patch Impact — from API */}
+      {stats?.patchVersion && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-shadow-dark/40">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-8">
+              <h2 className="font-cinzel text-3xl font-bold mb-2 gradient-text-soul">
+                Current Patch
+              </h2>
+              <p className="text-gray-400">
+                Live statistics from Patch {stats.patchVersion}
+              </p>
+            </div>
+
+            <Card glow="none">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Patch {stats.patchVersion}</CardTitle>
+                  <Badge variant="warning">Live</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 rounded-lg bg-shadow-light/10">
+                    <p className="text-sm text-gray-400 mb-1">Win Rate</p>
+                    <p className="text-2xl font-bold text-mist-green font-mono">
+                      {formatWinRate(stats.overallWinRate)}
+                    </p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-shadow-light/10">
+                    <p className="text-sm text-gray-400 mb-1">Pick Rate</p>
+                    <p className="text-2xl font-bold text-mist-cyan font-mono">
+                      {formatWinRate(stats.overallPickRate)}
+                    </p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-shadow-light/10">
+                    <p className="text-sm text-gray-400 mb-1">Ban Rate</p>
+                    <p className="text-2xl font-bold text-soul-gold font-mono">
+                      {formatWinRate(stats.overallBanRate)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-
-          <Card glow="none">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Patch 14.3</CardTitle>
-                <Badge variant="warning">Updated</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatBadge
-                  label="Win Rate Change"
-                  value="+1.2%"
-                  unit="↑"
-                />
-                <StatBadge
-                  label="Pick Rate Change"
-                  value="+0.8%"
-                  unit="↑"
-                />
-                <StatBadge
-                  label="Ban Rate Change"
-                  value="+2.3%"
-                  unit="↑"
-                />
-                <StatBadge
-                  label="Overall Impact"
-                  value="BUFFED"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-shadow-light">
-                <p className="text-sm text-gray-400 mb-3">Key Changes:</p>
-                <ul className="space-y-2">
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-mist-green">•</span>
-                    <span>Increased passive damage scaling by 5%</span>
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-mist-green">•</span>
-                    <span>W cooldown reduced at max rank</span>
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-mist-green">•</span>
-                    <span>New item synergies from item rework</span>
-                  </li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   )
 }

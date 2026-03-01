@@ -23,15 +23,22 @@ interface RoleComparisonProps {
   data?: RoleComparisonData[]
 }
 
-const defaultData: RoleComparisonData[] = [
-  { role: 'Top', winRate: 51.8, pickRate: 8.5, banRate: 12.3 },
-  { role: 'Jungle', winRate: 52.1, pickRate: 7.9, banRate: 11.8 },
-  { role: 'Mid', winRate: 51.5, pickRate: 9.2, banRate: 13.1 },
-  { role: 'Bot', winRate: 50.9, pickRate: 8.1, banRate: 11.5 },
-  { role: 'Support', winRate: 52.3, pickRate: 8.3, banRate: 12.0 },
-]
+export function RoleComparison({ data }: RoleComparisonProps): React.ReactElement {
+  if (!data || data.length === 0) {
+    return (
+      <Card glow="mist">
+        <CardHeader>
+          <CardTitle>Performance by Role</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[300px] text-gray-500 text-sm">
+            Role comparison data will appear once matches are analyzed.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
-export function RoleComparison({ data = defaultData }: RoleComparisonProps): React.ReactElement {
   return (
     <Card glow="mist">
       <CardHeader>

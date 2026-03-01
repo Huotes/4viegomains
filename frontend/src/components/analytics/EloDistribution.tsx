@@ -14,19 +14,22 @@ interface EloDistributionProps {
   data?: EloDistributionData[]
 }
 
-const defaultData: EloDistributionData[] = [
-  { elo: 'IRON', winRate: 45.2, matchCount: 5000 },
-  { elo: 'BRONZE', winRate: 47.8, matchCount: 8000 },
-  { elo: 'SILVER', winRate: 49.5, matchCount: 15000 },
-  { elo: 'GOLD', winRate: 51.2, matchCount: 25000 },
-  { elo: 'PLATINUM', winRate: 52.8, matchCount: 18000 },
-  { elo: 'DIAMOND', winRate: 54.1, matchCount: 12000 },
-  { elo: 'MASTER', winRate: 55.5, matchCount: 3000 },
-  { elo: 'GRANDMASTER', winRate: 56.2, matchCount: 800 },
-  { elo: 'CHALLENGER', winRate: 57.8, matchCount: 200 },
-]
+export function EloDistribution({ data }: EloDistributionProps) {
+  if (!data || data.length === 0) {
+    return (
+      <Card glow="mist">
+        <CardHeader>
+          <CardTitle>Win Rate by Elo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[300px] text-gray-500 text-sm">
+            Elo distribution data will appear once collected from ranked matches.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
-export function EloDistribution({ data = defaultData }: EloDistributionProps) {
   return (
     <Card glow="mist">
       <CardHeader>
