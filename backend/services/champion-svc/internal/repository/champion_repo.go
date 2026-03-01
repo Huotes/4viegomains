@@ -30,7 +30,7 @@ func (r *ChampionRepository) GetBuilds(ctx context.Context, role, elo, patch str
 	query := `
 		SELECT id, patch, role, elo_tier, build_path, win_rate, pick_rate,
 		       sample_size, avg_kda, avg_game_length, skill_order, summoner_spells
-		FROM viego_builds
+		FROM champion_build_stats
 		WHERE role = $1 AND elo_tier = $2
 	`
 
@@ -76,7 +76,7 @@ func (r *ChampionRepository) GetRunes(ctx context.Context, role, elo, patch stri
 	query := `
 		SELECT id, patch, role, elo_tier, primary_tree, primary_runes,
 		       secondary_tree, secondary_runes, stat_shards, win_rate, pick_rate, sample_size
-		FROM viego_runes
+		FROM champion_rune_stats
 		WHERE role = $1 AND elo_tier = $2
 	`
 
@@ -122,7 +122,7 @@ func (r *ChampionRepository) GetMatchup(ctx context.Context, role, elo string, e
 	query := `
 		SELECT id, patch, role, elo_tier, enemy_champion, win_rate, sample_size,
 		       avg_kda, gold_diff_15, cs_diff_15, tips
-		FROM viego_matchups
+		FROM champion_matchup_stats
 		WHERE role = $1 AND elo_tier = $2 AND enemy_champion = $3
 		ORDER BY sample_size DESC
 		LIMIT 1
@@ -154,7 +154,7 @@ func (r *ChampionRepository) GetAllMatchups(ctx context.Context, role, elo strin
 	query := `
 		SELECT id, patch, role, elo_tier, enemy_champion, win_rate, sample_size,
 		       avg_kda, gold_diff_15, cs_diff_15, tips
-		FROM viego_matchups
+		FROM champion_matchup_stats
 		WHERE role = $1 AND elo_tier = $2
 		ORDER BY sample_size DESC
 	`
@@ -191,7 +191,7 @@ func (r *ChampionRepository) GetMetaStats(ctx context.Context, role, elo string)
 		SELECT id, patch, role, elo_tier, win_rate, pick_rate, ban_rate,
 		       avg_kda, avg_cs_min, avg_gold_min, avg_damage_min, avg_vision,
 		       tier_rank, total_games, snapshot_date
-		FROM viego_meta_stats
+		FROM champion_meta_stats
 		WHERE role = $1 AND elo_tier = $2
 		ORDER BY snapshot_date DESC
 		LIMIT 1
@@ -223,7 +223,7 @@ func (r *ChampionRepository) GetLatestPatch(ctx context.Context) (string, error)
 	logger := slog.Default()
 
 	query := `
-		SELECT patch FROM viego_builds
+		SELECT patch FROM champion_build_stats
 		ORDER BY patch DESC
 		LIMIT 1
 	`

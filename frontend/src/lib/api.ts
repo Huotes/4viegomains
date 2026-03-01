@@ -118,9 +118,69 @@ export async function getMatchupsByRole(role: Role): Promise<ApiResponse<Matchup
 }
 
 export async function getChampionStats(role?: Role): Promise<ApiResponse<MetaStats>> {
-  const params = new URLSearchParams()
-  if (role) params.append('role', role)
-  return fetchAPI(`/champion/stats?${params.toString()}`)
+  // Backend returns array of per-role stats; transform into MetaStats shape
+  const raw = await fetchAPI<{ success: boolean; data: any }>(`/champion/stats`)
+
+  if (!raw.success || !raw.data) {
+    return { success: false, error: 'No stats available' } as any
+  }
+
+  const allRoleStats: any[] = Array.isArray(raw.data) ? raw.data : [raw.data]
+
+  if (allRoleStats.length === 0) {
+    return { success: false, error: 'No stats available' } as any
+  }
+
+  // Compute overall stats (weighted by total_games across roles)
+  let totalGames = 0
+  let weightedWinRate = 0
+  let weightedPickRate = 0
+  let weightedBanRate = 0
+  let patchVersion = ''
+
+  const byRole: Record<string, RoleAnalysis> = {} as any
+
+  for (const s of allRoleStats) {
+    const games = s.total_games || 0
+    totalGames += games
+    weightedWinRate += (s.win_rate || 0) * games
+    weightedPickRate += (s.pick_rate || 0)
+    weightedBanRate += (s.ban_rate || 0)
+    if (s.patch) patchVersion = s.patch
+
+    const roleKey = s.role as Role
+    byRole[roleKey] = {
+      role: roleKey,
+      winRate: s.win_rate || 0,
+      pickRate: s.pick_rate || 0,
+      banRate: s.ban_rate || 0,
+      avgKda: s.avg_kda || 0,
+      avgCs: s.avg_cs_min || 0,
+      avgGold: s.avg_gold_min || 0,
+      itemPopularity: [],
+      runePopularity: [],
+      matchCount: games,
+    }
+  }
+
+  const overallWinRate = totalGames > 0 ? weightedWinRate / totalGames : 0
+  // pick_rate and ban_rate are already per-role percentages, sum them for overall
+  const overallPickRate = weightedPickRate
+  const overallBanRate = allRoleStats.length > 0 ? allRoleStats[0].ban_rate || 0 : 0
+
+  const metaStats: MetaStats = {
+    timestamp: new Date().toISOString(),
+    overallWinRate,
+    overallPickRate,
+    overallBanRate,
+    byRole: byRole as any,
+    topBuildByRole: {} as any,
+    topRunesByRole: {} as any,
+    topMatchups: [],
+    patchVersion: patchVersion || 'Live',
+  }
+
+  return { success: true, data: metaStats } as any
 }
 
 export async function getItems(
