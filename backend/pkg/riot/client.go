@@ -49,7 +49,6 @@ func (c *Client) do(ctx context.Context, platform string, path string) (*http.Re
 
 	// Retry logic with exponential backoff
 	var resp *http.Response
-	var err error
 	maxRetries := 3
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {

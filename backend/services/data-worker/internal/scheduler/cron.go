@@ -250,5 +250,5 @@ func (s *Scheduler) RunJob(ctx context.Context, jobName string) error {
 func (s *Scheduler) cleanupOldData(ctx context.Context) error {
 	s.logger.Info("running cleanup job")
 	// This is delegated to the stats calculator
-	return s.statsCalculator.cleanupOldData(ctx)
+	return s.statsCalculator.CleanupOldData(ctx)
 }

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math"
-	"time"
 
 	"github.com/4viegomains/backend/pkg/database"
 	"github.com/4viegomains/backend/pkg/nats"
@@ -213,7 +211,7 @@ func (sc *StatsCalculator) storeMetaStat(ctx context.Context, championID int, ro
 			updated_at = NOW()
 	`
 
-	err := sc.postgresDB.Pool().Exec(ctx, query,
+	_, err := sc.postgresDB.Pool().Exec(ctx, query,
 		championID,
 		role,
 		winRate,
@@ -327,7 +325,7 @@ func (sc *StatsCalculator) storeMatchup(ctx context.Context, championID, enemyCh
 			updated_at = NOW()
 	`
 
-	err := sc.postgresDB.Pool().Exec(ctx, query,
+	_, err := sc.postgresDB.Pool().Exec(ctx, query,
 		championID,
 		enemyChampionID,
 		role,
@@ -387,8 +385,8 @@ func (sc *StatsCalculator) CalculateItemEfficiency(ctx context.Context) error {
 	return nil
 }
 
-// cleanupOldData cleans up old data from databases
-func (sc *StatsCalculator) cleanupOldData(ctx context.Context) error {
+// CleanupOldData cleans up old data from databases
+func (sc *StatsCalculator) CleanupOldData(ctx context.Context) error {
 	sc.logger.Info("cleaning up old data")
 
 	// Delete matches older than 90 days from ClickHouse

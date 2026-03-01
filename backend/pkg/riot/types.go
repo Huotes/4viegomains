@@ -1,7 +1,5 @@
 package riot
 
-import "time"
-
 // AccountDTO represents an account on a given platform
 type AccountDTO struct {
 	PUUID    string `json:"puuid"`

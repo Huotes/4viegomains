@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/4viegomains/backend/pkg/response"
-	"github.com/4viegomains/backend/services/champion-svc/internal/model"
 	"github.com/4viegomains/backend/services/champion-svc/internal/service"
 )
 

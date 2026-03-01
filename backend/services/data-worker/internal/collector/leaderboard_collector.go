@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"math"
 	"sync"
-	"time"
 
 	"github.com/4viegomains/backend/pkg/config"
 	"github.com/4viegomains/backend/pkg/database"
@@ -206,7 +205,7 @@ func (lc *LeaderboardCollector) updateTrackedPlayer(ctx context.Context, platfor
 		viegoWins = int(float64(stats.ViegoGames) * 0.5) // Rough estimate
 	}
 
-	err = tx.Exec(ctx, query,
+	_, err = tx.Exec(ctx, query,
 		stats.PUUID,
 		stats.Entry.SummonerID,
 		stats.GameName,

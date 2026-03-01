@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/4viegomains/backend/pkg/database"
 	"github.com/4viegomains/backend/pkg/nats"
@@ -166,7 +165,7 @@ func (ra *RuneAggregator) storeRune(ctx context.Context, runeID string, runes []
 		statPerks = fmt.Sprintf("%d,%d,%d", runes[2], runes[3], runes[4])
 	}
 
-	err := ra.postgresDB.Pool().Exec(ctx, query,
+	_, err := ra.postgresDB.Pool().Exec(ctx, query,
 		runeID,
 		ViegoChampionID,
 		role,

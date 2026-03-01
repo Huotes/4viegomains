@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	nats "github.com/nats-io/nats.go"
 )
@@ -182,22 +183,13 @@ func (c *Client) SubscribeCacheInvalidate(logger *slog.Logger, cacheKey string, 
 }
 
 // Request sends a request and waits for a response
-func (c *Client) Request(subject string, data interface{}, timeout interface{}) (*nats.Msg, error) {
+func (c *Client) Request(subject string, data interface{}, timeout time.Duration) (*nats.Msg, error) {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal data: %w", err)
 	}
 
-	// Type assertion for timeout
-	var dur interface{}
-	switch v := timeout.(type) {
-	case int:
-		dur = v
-	default:
-		dur = timeout
-	}
-
-	return c.conn.Request(subject, payload, dur)
+	return c.conn.Request(subject, payload, timeout)
 }
 
 // QueueSubscribe subscribes to a queue group

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/4viegomains/backend/pkg/database"
@@ -243,8 +244,5 @@ func (r *ChampionRepository) GetLatestPatch(ctx context.Context) (string, error)
 
 // itoa converts an integer to a string for use in query building
 func itoa(n int) string {
-	if n < 10 {
-		return string(rune('0' + n))
-	}
-	return ""
+	return fmt.Sprintf("%d", n)
 }

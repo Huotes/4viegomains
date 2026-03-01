@@ -43,7 +43,7 @@ func (c *DataDragonClient) GetLatestVersion(ctx context.Context) (string, error)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("API error %d: %s", resp.StatusCode, string(body))
 	}
 
 	var versions []string

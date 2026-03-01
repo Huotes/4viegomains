@@ -16,8 +16,8 @@ COPY . .
 # Disable workspace mode — each service has its own replace directives
 # Run go mod tidy to resolve deps, then build
 RUN cd services/${SERVICE} && \
-    GOWORK=off go mod tidy && \
-    CGO_ENABLED=0 GOOS=linux GOWORK=off go build -ldflags="-s -w" -o /bin/service ./cmd
+    GOWORK=off GONOSUMCHECK=* GOFLAGS=-mod=mod go mod tidy && \
+    CGO_ENABLED=0 GOOS=linux GOWORK=off GONOSUMCHECK=* go build -ldflags="-s -w" -o /bin/service ./cmd
 
 # Runtime
 FROM alpine:3.20

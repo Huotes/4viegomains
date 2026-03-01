@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math"
 	"strings"
-	"time"
 
 	"github.com/4viegomains/backend/pkg/database"
 	"github.com/4viegomains/backend/pkg/nats"
@@ -163,7 +161,7 @@ func (ba *BuildAggregator) storeBuild(ctx context.Context, buildID string, items
 		itemsStr += fmt.Sprintf("%d", item)
 	}
 
-	err := ba.postgresDB.Pool().Exec(ctx, query,
+	_, err := ba.postgresDB.Pool().Exec(ctx, query,
 		buildID,
 		ViegoChampionID,
 		role,
