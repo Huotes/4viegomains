@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/Card'
 import { LeaderboardTable } from '@/components/leaderboard/LeaderboardTable'
 import { RegionSelector } from '@/components/leaderboard/RegionSelector'
 import type { Region } from '@/lib/types'
-import { REGIONS, REGION_LABELS } from '@/lib/constants'
+import { REGIONS } from '@/lib/constants'
 import { getMockLeaderboard } from '@/lib/mockData'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'

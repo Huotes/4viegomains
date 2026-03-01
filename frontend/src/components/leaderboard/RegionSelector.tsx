@@ -31,7 +31,7 @@ export function RegionSelector({
       {REGIONS.map((region) => (
         <Button
           key={region}
-          variant={selectedRegion === region ? 'default' : 'ghost'}
+          variant={selectedRegion === region ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => onRegionChange(region)}
           className={`

@@ -19,7 +19,7 @@ export function Tooltip({
   className,
 }: TooltipProps): React.ReactElement {
   const [isVisible, setIsVisible] = useState(false)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleMouseEnter = () => {
@@ -29,7 +29,7 @@ export function Tooltip({
   }
 
   const handleMouseLeave = () => {
-    if (timeoutRef.current) {
+    if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current)
     }
     setIsVisible(false)
@@ -37,7 +37,7 @@ export function Tooltip({
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
+      if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current)
       }
     }

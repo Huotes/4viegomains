@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import type { Role } from '@/lib/types'
 import { ROLE_LABELS, ROLES } from '@/lib/constants'
-import { getMockRunes } from '@/lib/mockData'
 import { cn, formatWinRate } from '@/lib/utils'
 import Link from 'next/link'
 import {
@@ -21,7 +19,7 @@ const ROLE_ICONS: Record<Role, React.ReactNode> = {
   support: <Shield className="h-5 w-5" />,
 }
 
-// Mock rune tree data for visual display
+// Rune tree data for visual display - Define with values for rendering
 const RUNE_TREES: Record<string, { color: string; icon: string; keystones: string[]; rows: string[][] }> = {
   Precision: {
     color: '#c89b3c',
@@ -82,7 +80,7 @@ const STAT_SHARDS = {
 }
 
 // Mock selected rune pages
-function getMockRunePages(role: Role) {
+function getMockRunePages() {
   const pages = [
     {
       name: 'Conqueror Standard',
@@ -132,7 +130,7 @@ export default function RunesPage({ params }: RunesPageProps) {
   const { role: roleParam } = params as unknown as { role: string }
   const role = (ROLES.includes(roleParam as Role) ? roleParam : 'jungle') as Role
   const [selectedPage, setSelectedPage] = useState(0)
-  const runePages = getMockRunePages(role)
+  const runePages = getMockRunePages()
   const selected = runePages[selectedPage]
   const primaryTree = RUNE_TREES[selected.primary]
   const secondaryTree = RUNE_TREES[selected.secondary]

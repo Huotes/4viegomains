@@ -47,7 +47,7 @@ export function useViegoBuilds({
         setCachedData(cacheKey, response.data, CACHE_TTL.builds)
         setTotalPages(response.pagination.totalPages)
       } else {
-        throw new Error(response.error || 'Failed to fetch builds')
+        throw new Error((response as any).error || 'Failed to fetch builds')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'

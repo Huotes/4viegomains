@@ -2,7 +2,6 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { ELO_TIER_LABELS, TIER_COLORS } from '@/lib/constants'
 import type { EloTier } from '@/lib/types'
 
 interface EloDistributionData {
@@ -64,8 +63,8 @@ export function EloDistribution({ data = defaultData }: EloDistributionProps) {
                 borderRadius: '8px',
               }}
               labelStyle={{ color: '#00ff87' }}
-              formatter={(value: number) => [
-                value.toFixed(1) + '%',
+              formatter={(value: unknown) => [
+                (typeof value === 'number' ? value.toFixed(1) : value) + '%',
                 'Win Rate',
               ]}
             />

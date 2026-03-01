@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { Role, EloTier } from '@/lib/types'
-import { TIER_COLORS, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/constants'
+import { ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/constants'
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   children: React.ReactNode

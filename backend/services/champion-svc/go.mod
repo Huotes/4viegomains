@@ -7,6 +7,7 @@ require (
 	github.com/4viegomains/backend/pkg/database v0.0.0
 	github.com/4viegomains/backend/pkg/middleware v0.0.0
 	github.com/4viegomains/backend/pkg/nats v0.0.0
+	github.com/4viegomains/backend/pkg/response v0.0.0
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/nats-io/nats.go v1.31.0
@@ -47,4 +48,5 @@ replace (
 	github.com/4viegomains/backend/pkg/database => ../../pkg/database
 	github.com/4viegomains/backend/pkg/middleware => ../../pkg/middleware
 	github.com/4viegomains/backend/pkg/nats => ../../pkg/nats
+	github.com/4viegomains/backend/pkg/response => ../../pkg/response
 )

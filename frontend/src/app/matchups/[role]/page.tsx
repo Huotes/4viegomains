@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { RoleBadge, Badge } from '@/components/ui/Badge'
-import { Tabs } from '@/components/ui/Tabs'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import type { Role, Matchup } from '@/lib/types'
-import { ROLE_LABELS, ROLES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from '@/lib/constants'
+import type { Role } from '@/lib/types'
+import { ROLE_LABELS, ROLES, DIFFICULTY_LABELS } from '@/lib/constants'
 import { getMockMatchups } from '@/lib/mockData'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -22,7 +21,6 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
   const role = roleParam as Role
   const isValidRole = ROLES.includes(role)
   const [selectedTab, setSelectedTab] = useState('best')
-  const [sortBy, setSortBy] = useState<'winrate' | 'matchcount'>('winrate')
 
   const matchups = getMockMatchups(role)
   const bestMatchups = matchups.filter(m => m.difficulty === 'easy').sort((a, b) => b.winRate - a.winRate)
@@ -71,7 +69,26 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
           ))}
         </div>
 
-        <Tabs tabs={[{ id: 'best', label: 'Best Matchups' }, { id: 'worst', label: 'Worst Matchups' }]} activeTab={selectedTab} onTabChange={setSelectedTab} className="mb-8" />
+        <div className="mb-8">
+          <div className="flex gap-2 mb-8 flex-wrap border-b border-mist-green/20">
+            {[
+              { id: 'best', label: 'Best Matchups' },
+              { id: 'worst', label: 'Worst Matchups' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedTab(tab.id)}
+                className={`px-4 py-3 font-semibold transition-all text-sm md:text-base ${
+                  selectedTab === tab.id
+                    ? 'text-mist-green border-b-2 border-mist-green pb-2'
+                    : 'text-gray-400 hover:text-mist-cyan pb-3'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {(selectedTab === 'best' ? bestMatchups : worstMatchups).map((matchup) => (
@@ -80,7 +97,7 @@ export default function MatchupsPage({ params }: MatchupsPageProps): React.React
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold text-lg mb-1">{matchup.enemyChampionName}</h3>
-                    <Badge variant="secondary">{DIFFICULTY_LABELS[matchup.difficulty]}</Badge>
+                    <Badge variant="status">{DIFFICULTY_LABELS[matchup.difficulty]}</Badge>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-mist-green">{(matchup.winRate * 100).toFixed(1)}%</p>

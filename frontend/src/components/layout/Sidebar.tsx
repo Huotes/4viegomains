@@ -8,15 +8,10 @@ import { ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/lib/constants'
 import type { Role } from '@/lib/types'
 import { ChevronDown } from 'lucide-react'
 
-interface SidebarProps {
-  currentRole?: Role
-  showMobile?: boolean
-}
-
 const SECTIONS = ['builds', 'runes', 'guides', 'matchups']
 const ELO_TIERS = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master']
 
-export function Sidebar({ currentRole = 'top', showMobile = false }: SidebarProps): React.ReactElement {
+export function Sidebar(): React.ReactElement {
   const pathname = usePathname()
   const [expandedRole, setExpandedRole] = useState<Role | null>(
     ROLES.find((r) => pathname.includes(`/${r}`)) || 'top'

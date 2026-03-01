@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { Button } from './Button'
 import { Search, X } from 'lucide-react'
 
 interface SearchInputProps {
@@ -23,10 +22,10 @@ export function SearchInput({
   const [value, setValue] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [hasError, setHasError] = useState(false)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (timeoutRef.current) {
+    if (timeoutRef.current !== null) {
       clearTimeout(timeoutRef.current)
     }
 
@@ -43,7 +42,7 @@ export function SearchInput({
     }, debounceMs)
 
     return () => {
-      if (timeoutRef.current) {
+      if (timeoutRef.current !== null) {
         clearTimeout(timeoutRef.current)
       }
     }

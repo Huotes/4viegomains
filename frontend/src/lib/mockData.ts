@@ -26,9 +26,8 @@ const ITEM_IDS = {
   MERCURY_TREADS: 2055,
   GHOSTBLADE: 6691,
   MANAMUNE: 3003,
+  INFINITY_EDGE: 3031,
 }
-
-const RUNE_TREES = ['Precision', 'Domination', 'Sorcery', 'Resolve', 'Inspiration']
 
 export function getMockBuilds(role?: Role): ViegoBuild[] {
   const builds: ViegoBuild[] = [
@@ -107,12 +106,6 @@ export function getMockBuilds(role?: Role): ViegoBuild[] {
   ]
 
   return role ? builds.filter(b => b.role === role) : builds
-}
-
-// Add missing property name to ITEM_IDS
-const ITEM_IDS_EXTENDED = {
-  ...ITEM_IDS,
-  INFINITY_EDGE: 3031,
 }
 
 export function getMockRunes(role?: Role): ViegoRunes[] {

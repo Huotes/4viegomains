@@ -49,7 +49,7 @@ export function useLeaderboard({
         setTotalPages(response.pagination.totalPages)
         setTotal(response.pagination.total)
       } else {
-        throw new Error(response.error || 'Failed to fetch leaderboard')
+        throw new Error((response as any).error || 'Failed to fetch leaderboard')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'

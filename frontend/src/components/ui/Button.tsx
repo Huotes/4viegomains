@@ -2,7 +2,6 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
 interface ButtonBaseProps {
-  children: React.ReactNode
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'link'
   size?: 'sm' | 'md' | 'lg' | 'icon'
   icon?: React.ReactNode
@@ -10,9 +9,12 @@ interface ButtonBaseProps {
   className?: string
 }
 
-interface ButtonProps extends ButtonBaseProps, React.ButtonHTMLAttributes<HTMLButtonElement> {}
+interface ButtonProps extends ButtonBaseProps, React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode
+}
 
 interface LinkButtonProps extends ButtonBaseProps {
+  children: React.ReactNode
   href: string
   target?: string
   rel?: string

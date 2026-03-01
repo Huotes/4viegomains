@@ -280,9 +280,9 @@ export function clamp(value: number, min: number, max: number): number {
 }
 
 /**
- * Generate avatar URL from summoner name
+ * Generate avatar URL from profile icon ID
  */
-export function getAvatarURL(summonerName: string, profileIconId: number): string {
+export function getAvatarURL(profileIconId: number): string {
   return getDDragonURL(`img/profileicon/${profileIconId}.png`)
 }
 

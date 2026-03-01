@@ -9,16 +9,7 @@ import { getMockPlayerProfile } from '@/lib/mockData'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
-interface PlayerPageProps {
-  params: Promise<{
-    region: string
-    name: string
-    tag: string
-  }>
-}
-
-export default function PlayerPage({ params }: PlayerPageProps): React.ReactElement {
-  const { region, name, tag } = params as any
+export default function PlayerPage(): React.ReactElement {
   const player = getMockPlayerProfile()
 
   const performanceData = [

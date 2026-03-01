@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import type { Role } from '@/lib/types'
 import { ROLE_LABELS, ROLES } from '@/lib/constants'
 import { getMockBuilds } from '@/lib/mockData'
@@ -12,7 +10,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   Sword, TreePine, Sparkles, Crosshair, Shield,
-  ArrowRight, ChevronDown, Trophy, Users, BarChart3,
+  ArrowRight, Trophy,
 } from 'lucide-react'
 
 const ROLE_ICONS: Record<Role, React.ReactNode> = {

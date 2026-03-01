@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/Card'
 import { RoleBadge } from '@/components/ui/Badge'
 import type { Role } from '@/lib/types'
 import { ROLE_LABELS, ROLES } from '@/lib/constants'

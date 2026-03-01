@@ -3,14 +3,13 @@
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import type { MatchSummary } from '@/lib/types'
-import { formatDuration, formatRelativeTime, formatKDA, getRoleIcon } from '@/lib/utils'
+import { formatDuration, formatRelativeTime, getRoleIcon } from '@/lib/utils'
 
 interface MatchHistoryProps {
   matches: MatchSummary[]
-  expandable?: boolean
 }
 
-export function MatchHistory({ matches, expandable = false }: MatchHistoryProps) {
+export function MatchHistory({ matches }: MatchHistoryProps) {
   return (
     <div className="space-y-3">
       {matches.map((match) => {
@@ -50,7 +49,7 @@ export function MatchHistory({ matches, expandable = false }: MatchHistoryProps)
               </div>
 
               {/* Role Badge */}
-              <Badge variant="secondary">
+              <Badge variant="status">
                 <span>{getRoleIcon(match.role)}</span>
                 <span className="ml-1">{match.role.toUpperCase()}</span>
               </Badge>
