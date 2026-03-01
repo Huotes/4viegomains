@@ -55,8 +55,10 @@ func (db *PostgresDB) Pool() *pgxpool.Pool {
 func (db *PostgresDB) InitSchema(ctx context.Context) error {
 	logger := slog.Default()
 
-	// Create tables schema
+	// Create tables schema (explicit public schema to avoid conflict with viego schema from migrations)
 	schema := `
+	SET search_path TO public;
+
 	CREATE TABLE IF NOT EXISTS tracked_players (
 		id SERIAL PRIMARY KEY,
 		puuid VARCHAR(255) UNIQUE NOT NULL,

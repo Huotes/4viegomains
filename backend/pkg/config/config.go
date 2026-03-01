@@ -42,22 +42,22 @@ func Load() (*Config, error) {
 	// Set defaults
 	v.SetDefault("port", 8080)
 	v.SetDefault("loglevel", "info")
-	v.SetDefault("riotapikey", "")
-	v.SetDefault("postgresurl", "postgres://localhost:5432/viegomains")
-	v.SetDefault("redisurl", "redis://localhost:6379")
-	v.SetDefault("clickhouseurl", "clickhouse://localhost:9000/viegomains")
-	v.SetDefault("natsurl", "nats://localhost:4222")
+	v.SetDefault("riot_api_key", "")
+	v.SetDefault("postgres_url", "postgres://localhost:5432/viegomains")
+	v.SetDefault("redis_url", "redis://localhost:6379")
+	v.SetDefault("clickhouse_url", "clickhouse://viego:clickhouse_pass@localhost:9000/viego")
+	v.SetDefault("nats_url", "nats://localhost:4222")
 
 	// Read from environment
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 
 	cfg := &Config{
-		RiotAPIKey:    v.GetString("riotapikey"),
-		PostgresURL:   v.GetString("postgresurl"),
-		RedisURL:      v.GetString("redisurl"),
-		ClickHouseURL: v.GetString("clickhouseurl"),
-		NATSURL:       v.GetString("natsurl"),
+		RiotAPIKey:    v.GetString("riot_api_key"),
+		PostgresURL:   v.GetString("postgres_url"),
+		RedisURL:      v.GetString("redis_url"),
+		ClickHouseURL: v.GetString("clickhouse_url"),
+		NATSURL:       v.GetString("nats_url"),
 		Port:          v.GetInt("port"),
 		LogLevel:      v.GetString("loglevel"),
 		Regions: map[string]RegionConfig{
@@ -153,11 +153,16 @@ func Load() (*Config, error) {
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
-	if c.RiotAPIKey == "" {
-		return fmt.Errorf("RIOTAPIKEY environment variable is required")
-	}
 	if c.Port <= 0 || c.Port > 65535 {
 		return fmt.Errorf("invalid port: %d", c.Port)
+	}
+	return nil
+}
+
+// ValidateRiotKey validates that the Riot API key is set (for services that need it)
+func (c *Config) ValidateRiotKey() error {
+	if c.RiotAPIKey == "" {
+		return fmt.Errorf("RIOT_API_KEY environment variable is required")
 	}
 	return nil
 }

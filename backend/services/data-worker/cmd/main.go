@@ -36,6 +36,10 @@ func main() {
 		logger.Error("failed to load configuration", "error", err)
 		os.Exit(1)
 	}
+	if err := cfg.ValidateRiotKey(); err != nil {
+		logger.Error("failed to validate config", "error", err)
+		os.Exit(1)
+	}
 
 	// Initialize databases
 	logger.Info("initializing databases")

@@ -16,9 +16,11 @@ type ClickHouseDB struct {
 
 // NewClickHouseDB creates a new ClickHouse connection
 func NewClickHouseDB(ctx context.Context, dsn string) (*ClickHouseDB, error) {
-	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{dsn},
-	})
+	opts, err := clickhouse.ParseDSN(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ClickHouse DSN: %w", err)
+	}
+	conn, err := clickhouse.Open(opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to ClickHouse: %w", err)
 	}
