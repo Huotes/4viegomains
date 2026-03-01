@@ -2,7 +2,6 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['ddragon.leagueoflegends.com', 'raw.communitydragon.org'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,9 +17,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typescript: {
     tsconfigPath: './tsconfig.json',
-  },
-  eslint: {
-    ignoreDuringBuilds: false,
   },
 }
 
